@@ -271,7 +271,7 @@ $db->close();
                                 <h5 class="m-0"><?php echo  htmlspecialchars($Sub['Title']); ?> </h5>
                             </a>
                             <div class="m-auto">
-                                <a class="btn btn btn-info">
+                                <a class="btn btn btn-info"  href="<?php echo "Prompt.php?ID=" . $Sub['CorrelationID']; ?>">
                                     View
                                 </a>
                             </div>
