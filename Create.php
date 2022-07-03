@@ -1,8 +1,8 @@
 <?php
-// Class for secure MYSQL queries : Info Connection on config.php
+// Class for secure MYSQL queries : Info on Connection on config.php
 require 'class\db.php';
 
-// When the submit or the draft button is clicked.
+// When the submit or the draft button is clicked. We begin the procedure to insert the data.
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // We get all the information from the form (Title, number of WI, prompt etc.)
@@ -11,18 +11,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $description = $_POST['Command_Description'];
     $file = $_POST['Command_File'];
     $prompt = $_POST['Command_PromptContent'];
-    $pf = $_POST['Command_Pf'];
-    //Tags only if not a subscenario
+
+    //Subscenario don't have tags
     if (!isset($_POST["Command_Parent"]))
         $tag = preg_replace('!\s+!', ' ', $_POST['Command_PromptTags']);
     else
         $tag = "";
     $memory =  $_POST['Command_Memory'];
     $author = $_POST['Command_AuthorsNote'];
+    //Only the first parent have an edit code, his sons share the same with him.
     if (!isset($_POST["Command_Parent"]))
         $editcode = $_POST['Command_GenerateCode'];
     $dateC = (string)date("Y-m-d H:i:s");
     $nsfw = isset($_POST['Command_Nsfw']) ? 1 : 0;
+
     // Connection to MYSQL database
     $db = new db();
     // To create the CorrelationID we need the Max of what actually exist on the prompts table + 1
@@ -39,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         "entries": [';
 
         for ($i = 0; $i <= $cwi; $i++) {
-            if ($_POST["Command__WIK" . $i] != "" && $_POST["Command__WI" . $i] != "") {
+            if ($_POST["Command__WIK" . $i] != "" || $_POST["Command__WI" . $i] != "") {
                 $key =   preg_replace('!\s+!', ' ', str_replace('"', '\"', str_replace(PHP_EOL, "\\n", $_POST["Command__WIK" . $i])));
                 $file = $file . '{"text": "' . str_replace('"', '\"', str_replace(PHP_EOL, "\\n", $_POST["Command__WI" . $i])) . '", "keys": ["' . $key . '"], "displayName":"' .  preg_split("/\,/", $key)[0] . '" }';
                 if (($i + 1) <= $cwi && $_POST["Command__WIK" . ($i + 1)] != "" && $_POST["Command__WI" . ($i + 1)] != "")
@@ -48,6 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
         $file = $file . "]}}";
     }
+
 
     if (!isset($_POST["Command_Parent"])) {
         $alltags = preg_split("/\,/", $tag);
@@ -78,15 +81,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     );
 
 
-    // If not a draft we add the PublishDate
+    // If not a draft we add the PublishDate (Submit button was pressed)
     if (isset($_POST['subPrompts'])) {
-      
+
         if (!isset($_POST["Command_Parent"])) {
             $sql = "INSERT INTO prompts
     (AuthorsNote, Description, Memory, Nsfw, PromptContent, Tags, Title, CorrelationID, DateCreated, NovelAIScenario, PublishDate)
     VALUES(?, ?, ?,?, ?,?,?, ?, ?,?, ?);";
             $sqlparams[] =   $dateC;
-        } 
+        }
         //If it's a subscenario we add the ParentID
         else {
             $sql = "INSERT INTO prompts
@@ -113,24 +116,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $key = $_POST["Command__WIK" . $i];
         $entry = $_POST["Command__WI" . $i];
         $newWorldCorrelationID = $newWorldCorrelationID + $i;
-        if ($key != "" && $entry != "") {
+        if ($key != "" || $entry != "") {
             $sql = "INSERT INTO worldinfos
     (Entry, WKeys, PromptId, CorrelationId, DateCreated)
     VALUES(?, ?, ?, ?, ?);";
             $insert = $db->query($sql, array($entry, $key, $idNow, $newWorldCorrelationID, $dateC));
         }
     }
-      // We insert the edit code into the editcode table if it's not a subscenario
+    // We insert the edit code into the editcode table if it's not a subscenario
     if (!isset($_POST["Command_Parent"])) {
-      
+
         $sql = "INSERT INTO editcode (PromptID, CodeEdit) VALUES(?,?);";
         $insert = $db->query($sql, array($idNow, $editcode));
     }
+
+    //Session to have right to view if draft
+
+
     $db->close();
-    // We redirect to the Index.
-    header('Location: Index.php');
+    session_start();
+    // We redirect to the Created prompt.
+    if (!isset($_POST["Command_Parent"])) {
+
+        $_SESSION['CodeEdit'] = $editcode;
+    }
+    header('Location: Prompt.php?ID=' . $newCorrelationID);
     exit();
-} 
+}
 //We know by url parameter if we are creating a subScenario or not
 else if (isset($_GET['IDParent'])) {
     //We start the session to get the EditCode
@@ -218,7 +230,6 @@ else if (isset($_GET['IDParent'])) {
                 <div class="form-group required">
                     <label for="Command_PromptContent">Prompt<span class="text-danger">*</span></label>
                     <textarea class="form-control" id="Command_PromptContent" name="Command.PromptContent" required></textarea>
-                    <textarea class="form-control" id="Command_Pf" name="Command.Pf" hidden></textarea>
                     <div class="invalid-feedback">The Prompt field is required.</div>
                 </div>
                 <?php if (!isset($_GET['IDParent'])) { ?>
@@ -252,7 +263,7 @@ else if (isset($_GET['IDParent'])) {
                     <div id="world-info-body" class="collapse show card-body">
                         <div>
                             <p>Any World Info left blank will be automatically removed on submission.</p>
-                            <div id="test">
+                            <div id="anchorWI">
                                 <div id="world-info-card-0" class="card mb-4">
                                     <div class="card-body">
                                         <div class="form-group">
@@ -292,7 +303,6 @@ else if (isset($_GET['IDParent'])) {
                 </div>
 
     </div>
-    <!-- JavaScript for disabling form submissions if there are invalid fields -->
 </body>
 
 </html>

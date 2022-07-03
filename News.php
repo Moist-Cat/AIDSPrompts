@@ -1,8 +1,9 @@
 <?php
 require 'class\db.php';
 $db = new db();
+//News are in the table news. Each return to line is morphed into a <li>
 $querryNews = "SELECT Distinct * FROM news";
-$news= $db->query($querryNews)->fetchAll();
+$news = $db->query($querryNews)->fetchAll();
 ?>
 <!DOCTYPE html>
 <html>
@@ -29,18 +30,18 @@ $news= $db->query($querryNews)->fetchAll();
             <br />
             <div class="row">
                 <?php foreach ($news as $new) { ?>
-                <div class="col-12 mb-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title mb-4"><?php echo htmlspecialchars($new['Date']). " - " . htmlspecialchars($new['Title']) ?> </h5>
-                            <ul>
-                                <li class="mb-3">
-                                <?php echo str_replace("\n", ' </li> <li class="mb-3">', $new['Content']) ?>
-                                </li>
-                            </ul>
+                    <div class="col-12 mb-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title mb-4"><?php echo htmlspecialchars($new['Date']) . " - " . htmlspecialchars($new['Title']) ?> </h5>
+                                <ul>
+                                    <li class="mb-3">
+                                        <?php echo str_replace("\n", ' </li> <li class="mb-3">', $new['Content']) ?>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
-                </div>
                 <?php } ?>
             </div>
         </main>

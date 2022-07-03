@@ -130,9 +130,11 @@ VALUES(?, ?, ?, ?, ?);";
             $insert = $db->query($sql, array($entry, $key, $promptInfos['Id'], $newWorldCorrelationID, $dateC));
         }
     }
+
+    // We go to the edited prompt
+    $_SESSION['CodeEdit'] = $CodeEdit;
     $db->close();
-    // We return to the index.
-    header('Location: Index.php');
+    header('Location: Prompt.php?ID=' . $promptInfos['CorrelationID']);
 
     exit();
 }
@@ -159,6 +161,10 @@ VALUES(?, ?, ?, ?, ?);";
     include('header.php'); ?>
     <div class="container">
         <main role="main" class="pb-3">
+            <?php if (!is_null($promptInfos['ParentID'])) { ?>
+                <div class="alert alert-primary">
+                    You are editing a sub scenario. <a href="<?php echo "Edit.php?ID=" . $promptInfos['ParentID']; ?>">Click here to return to the parent without change.</a>
+                </div> <?php } ?>
             <h2> <?php if (!isset($promptInfos['PublishDate'])) { ?>
                     <span class="mr-2 badge badge-warning">Draft</span>
                 <?php } ?> Edit Prompt
@@ -182,7 +188,7 @@ VALUES(?, ?, ?, ?, ?);";
             </div>
             <form enctype="multipart/form-data" method="post" action="Edit.php?ID=<?php echo $IDprompt ?>" class="needs-validation" novalidate>
 
-                <input class="form-control" type="hidden" id="Command_CWI" name="Command.CWI" value="<?php echo ($NbWI-1) ?>" />
+                <input class="form-control" type="hidden" id="Command_CWI" name="Command.CWI" value="<?php echo ($NbWI - 1) ?>" />
                 <input class="form-control" type="hidden" id="Command_File" name="Command.File" value="" />
                 <div class="form-group required">
                     <label for="Command_Title">Title<span class="text-danger">*</span></label>
@@ -230,7 +236,7 @@ VALUES(?, ?, ?, ?, ?);";
                     <div id="world-info-body" class="collapse show card-body">
                         <div>
                             <p>Any World Info left blank will be automatically removed on submission.</p>
-                            <div id="test">
+                            <div id="anchorWI">
 
                                 <?php if ($Winfos != 0)  foreach ($Winfos as $WInf) : ?>
                                     <div id="world-info-card-<?php echo $iWI; ?>" class="card mb-4">
@@ -278,11 +284,9 @@ VALUES(?, ?, ?, ?, ?);";
 
                                     </div>
                                     <div class="ml-2">
-                                        <form method="POST" name="FDelete" id="DeleteForm" action="<?php echo "Edit.php?ID=" . $IDprompt; ?>">
-                                            <input class="form-control" type="hidden" id="Command_SubCID" name="Command.SubCID" value="<?php echo $Sub['CorrelationID'] ?>" />
-                                            <input class="form-control" type="hidden" id="Command_SubID" name="Command.SubID" value="<?php echo $Sub['Id'] ?>" />
-                                            <button type="submit" id="DeleteBtn" name="DeleteBtn" class="btn btn-outline-danger btn-delete">Delete</button>
-                                        </form>
+                                        <input class="form-control" type="hidden" id="Command_SubCID" name="Command.SubCID" value="<?php echo $Sub['CorrelationID'] ?>" />
+                                        <input class="form-control" type="hidden" id="Command_SubID" name="Command.SubID" value="<?php echo $Sub['Id'] ?>" />
+                                        <button type="submit" id="DeleteBtn" name="DeleteBtn" class="btn btn-outline-danger btn-delete">Delete</button>
                                     </div>
                                 </div>
 
@@ -299,11 +303,7 @@ VALUES(?, ?, ?, ?, ?);";
 
                         Submit
                     </button>
-
                 </div>
-
-                <h4 id="fileDisplayArea" hidden>
-                    <h4>
             </form>
         </main>
     </div>

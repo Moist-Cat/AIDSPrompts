@@ -23,9 +23,10 @@
         $(document).ready(function () {
             // Number of WI currently on user page.
             var counterWI = (parseInt($("#Command_CWI").val()));
+
             // Add WorldInfo div on client side when Add Another is clicked. 
             $("#add-wi").click(function () {
-                $('#test').append('<br id="br' + (counterWI + 1) + '">' + '<div id="world-info-card-' + (counterWI + 1) + '" class="card mb-4"> ' +
+                $('#anchorWI').append('<br id="br' + (counterWI + 1) + '">' + '<div id="world-info-card-' + (counterWI + 1) + '" class="card mb-4"> ' +
                     ' <div class="card-body">' + '<div class="form-group">' + '<label for="Command__WIK' + (counterWI + 1) + '">Keys</label>' +
                     ' <input class="form-control" type="text" id="Command__WIK' + (counterWI + 1) + '" name="Command._WIK' + (counterWI + 1) + '" value="" />' +
                     '</div>' + '<div class="form-group">' + '<label for="Command__WI' + (counterWI + 1) + '">Information</label>' +
@@ -69,7 +70,6 @@
             $("#upfile").click(function () {
 
                 var fileInput = document.getElementById('fileInput');
-                var fileDisplayArea = document.getElementById('fileDisplayArea');
                 var file = fileInput.files[0];
                 var lengthmax = 0;
                 var reader = new FileReader();
@@ -93,7 +93,7 @@
                     var str2 = str.match(/(?<="entries": *\[ *{ *").*?(?=]})/g);
                     if (str2 != null) {
                         str2 = str2[0];
-                        lengthmax = str2.match(/(?<="keys": *\[ *" *).*?(?=], *")/g).length;
+                        lengthmax = str2.match(/(?<="keys": *\[).*?(?=], *")/g).length;
                     }
 
 
@@ -125,6 +125,18 @@
                 }
 
                 reader.readAsText(file);
+            });
+
+            $("#Generate").click(function () {
+                var result = '';
+                var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789*/+-)([]$&';
+                var charactersLength = characters.length;
+                for (var i = 0; i < 10; i++) {
+                    result += characters.charAt(Math.floor(Math.random() *
+                        charactersLength));
+                }
+
+                $("#Command_GenerateCode").val(result);
             });
         });
     }, false);

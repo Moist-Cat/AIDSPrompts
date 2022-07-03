@@ -143,7 +143,7 @@ class db
 	}
 
 
-/*By me 
+	/*By me 
 Function to get all wordinfos from a correlationID
 */
 	public function worldInfos($ID)
@@ -162,7 +162,7 @@ Function to get all wordinfos from a correlationID
 		$querryWI = "SELECT Distinct Id FROM worldinfos where PromptID = ? Order by CorrelationID";
 		$ResultWI = $this->query($querryWI, array($ID));
 		$nb = $ResultWI->numRows();
-			return $nb;
+		return $nb;
 	}
 
 	// Function to get all subs of a correlationID
@@ -219,23 +219,28 @@ Function to get all wordinfos from a correlationID
 		return 	$this->query($querryPrompt, array($ParentId))->fetchArray()['PublishDate'];
 	}
 
-	// Function to deelete a subScenario and his own subscenarios.
+	// Function to delete a subScenario and his own subscenarios.
 	public function deleteSub($ID, $CID)
-	{   
+	{
 		$querrySub =  "SELECT Distinct Id, CorrelationID FROM prompts where ParentId = ?";
 		$subs = $this->query($querrySub, array($CID));
 		$subsNb = $subs->numRows();
-		if($subsNb > 0)
-		{
-			$subs= $subs->fetchAll();
-			foreach ($subs as $Sub) { 
-				$this->deleteSub($Sub['Id'],$Sub['CorrelationID']);
+		if ($subsNb > 0) {
+			$subs = $subs->fetchAll();
+			foreach ($subs as $Sub) {
+				$this->deleteSub($Sub['Id'], $Sub['CorrelationID']);
 			}
 		}
 		$querryDelete =  "DELETE FROM prompts WHERE Id = ?";
 		$delete = $this->query($querryDelete, array($ID));
-
+		$querryDelete =  "DELETE FROM worldinfos WHERE PromptId = ?";
+		$delete = $this->query($querryDelete, array($ID));
 	}
 
-
+	// Function to return a random CorrelationID
+	public function promptRandom()
+	{
+		$querryRandom = "SELECT CorrelationID from prompts where PublishDate is not null order by rand() limit 1";
+		return $this->query($querryRandom)->fetchArray()['CorrelationID'];
+	}
 }

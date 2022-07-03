@@ -1,5 +1,5 @@
 <?php
-    include('config\config.php');
+include('config\config.php');
 class DatabaseBackup
 {
 
@@ -19,14 +19,14 @@ class DatabaseBackup
             new Database();
         }
     }
-    
+
     function getAllTable()
     {
         $tables = array();
-        
+
         $sql = "SHOW TABLES";
         $result = mysqli_query($this->conn, $sql);
-        
+
         while ($row = mysqli_fetch_row($result)) {
             $tables[] = $row[0];
         }
@@ -41,12 +41,12 @@ class DatabaseBackup
     {
         $fileString = "";
         foreach ($tables as $table) {
-            if(!empty($table)) {
+            if (!empty($table)) {
                 $fileString .= $this->getSQLScript($table);
             }
         }
-        
-        if(strlen($fileString) > 0) {
+
+        if (strlen($fileString) > 0) {
             $this->saveToBackupFile($fileString);
         }
     }
@@ -57,27 +57,27 @@ class DatabaseBackup
         $sqlShowQuery = "SHOW CREATE TABLE $tableName";
         $result = mysqli_query($this->conn, $sqlShowQuery);
         $row = mysqli_fetch_row($result);
-        
+
         $fileString .= "\n\n" . $row[1] . ";\n\n";
         $sqlQuery = "SELECT * FROM " . $tableName;
         if ($tableName == "prompts")
-        $sqlQuery.= " where PublishDate is not null";
+            $sqlQuery .= " where PublishDate is not null";
         if ($tableName == "worldinfos")
-        $sqlQuery.= " where PromptId in (Select Id from prompts where PublishDate is not null)";
+            $sqlQuery .= " where PromptId in (Select Id from prompts where PublishDate is not null)";
         $result = mysqli_query($this->conn, $sqlQuery);
-        
+
         // Return the number of fields (columns)
-       $fieldCount = mysqli_num_fields($result);
-        
-        
-        for ($i = 0; $i < $fieldCount; $i ++) {
+        $fieldCount = mysqli_num_fields($result);
+
+
+        for ($i = 0; $i < $fieldCount; $i++) {
             while ($row = mysqli_fetch_row($result)) {
                 $fileString .= "INSERT INTO $tableName VALUES(";
-                for ($j = 0; $j < $fieldCount; $j ++) {
+                for ($j = 0; $j < $fieldCount; $j++) {
                     $row[$j] = $row[$j];
-                    
+
                     if (isset($row[$j])) {
-                        $fileString .= "'" . str_replace("'","\'", str_replace('\\','\\\\',$row[$j])) . "'" ;
+                        $fileString .= "'" . str_replace("'", "\'", str_replace('\\', '\\\\', $row[$j])) . "'";
                     } else {
                         $fileString .= "''";
                     }
@@ -88,7 +88,7 @@ class DatabaseBackup
                 $fileString .= ");\n";
             }
         }
-        
+
         $fileString .= "\n";
         return $fileString;
     }
@@ -98,11 +98,11 @@ class DatabaseBackup
 
         $backup_file_name = DBNAME . '_backup_' . time() . '.sql';
 
-        
+
         // Download the SQL backup file to the browser
         header('Content-Description: File Transfer');
         header('Content-Type: application/octet-stream');
-        header('Content-Disposition: attachment; filename='. $backup_file_name);
+        header('Content-Disposition: attachment; filename=' . $backup_file_name);
         header('Content-Transfer-Encoding: binary');
         header('Expires: 0');
         header('Cache-Control: must-revalidate');
@@ -110,8 +110,5 @@ class DatabaseBackup
         ob_clean();
         echo $fileString;
         flush();
-
-
     }
 }
-?>

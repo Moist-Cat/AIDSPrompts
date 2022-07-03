@@ -6,16 +6,31 @@ session_start();
 
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
+    //If random was pressed we use the function promptrandom in db.php to go to an existing random prompt
+    if (isset($_POST['Random'])) {
+        $db = new db();
+        $rand = $db->promptRandom();
+        $db->close();
+        header("Location: Prompt.php?ID=" . $rand);
+        exit();
+    }
+    // If an edit code was entered in the search form we push it into the session for the code.
     if (!empty($_POST["CodeEdit"])) {
         $_SESSION['CodeEdit'] = $_POST["CodeEdit"];
+    } else {
+        // We unset the edit code it the user deleted it from the search form.
+        if (isset(($_SESSION['CodeEdit'])))
+            unset($_SESSION['CodeEdit']);
     }
-    else
-    {if(isset(($_SESSION['CodeEdit'])))
-    unset($_SESSION['CodeEdit']);}
-    $url = "Index.php?Query=" . $_POST["Query"] . "&NsfwSetting=" . $_POST["NsfwSetting"]. "&Tags=" . $_POST["Tags"]. "&MatchExact=" . $_POST["MatchExact"] . "&TagJoin=" . $_POST["TagJoin"];
+    // We use URL parameters to account for all the search options.
+    $url = "Index.php?Query=" . $_POST["Query"] . "&NsfwSetting=" . $_POST["NsfwSetting"] . "&Tags=" . $_POST["Tags"] . "&TagJoin=" . $_POST["TagJoin"];
+    if (isset($_POST["MatchExact"]))
+        $url .= "&MatchExact=" . $_POST["MatchExact"];
+    if (isset($_POST["Reverse"]))
+        $url .= "&Reverse=" . $_POST["Reverse"];
     header("Location: $url");
     exit();
-
 }
 
 if (empty(array_diff($_GET, ['']))) {
@@ -29,6 +44,7 @@ $NsfwSetting = isset($_GET['NsfwSetting']) ? $_GET['NsfwSetting'] : "0";
 // Same for seach option (Match Exact tags etc.)
 $exact_tags =  isset($_GET['MatchExact']) ? $_GET['MatchExact'] : "false";
 $tag_join =  isset($_GET['TagJoin']) ? $_GET['TagJoin'] : "0";
+$reverse = isset($_GET['Reverse']) ? $_GET['Reverse'] : "false";
 
 // Put them in a table to pass more easily when page is changed
 $data = array(
@@ -41,7 +57,7 @@ $data = array(
 
 //List of variable for MySQLi Prepared Statements
 $sqlparams = array();
-$code ="";
+$code = "";
 // Declare a variable for our current page. If no page is set, the default is page 1
 $current_page = isset($_GET['page']) ? $_GET['page'] : 1;
 
@@ -64,15 +80,15 @@ $db = new db();
 // Select used to diplay the prompts on the page
 
 $queryList = 'SELECT Distinct *, 1 FROM prompts where ParentID is Null and PublishDate is not null ';
-If  (isset($_SESSION['CodeEdit'])) {
-$code = $_SESSION['CodeEdit'];
-$queryList = 'SELECT Distinct *  FROM prompts , editcode where ParentID is Null and BINARY CodeEdit =? and PromptID = prompts.Id ';
-$sqlparams[] = $_SESSION['CodeEdit']; 
+if (isset($_SESSION['CodeEdit'])) {
+    $code = $_SESSION['CodeEdit'];
+    $queryList = 'SELECT Distinct *  FROM prompts , editcode where ParentID is Null and BINARY CodeEdit =? and PromptID = prompts.Id ';
+    $sqlparams[] = $_SESSION['CodeEdit'];
 }
 
 // If filter for the Title is actived we add the condition
 if (!empty($by_title)) {
-    $queryList = $queryList . "and Title like ?";
+    $queryList .= "and Title like ?";
     $sqlparams[] = "%$by_title%";
 }
 
@@ -92,7 +108,7 @@ if (!empty($by_tags)) {
             case "0":
                 foreach ($alltags as $t) {
                     $t = trim($t);
-                    $queryList = $queryList . " and (Tags LIKE ? or Tags LIKE ? or Tags LIKE ?)";
+                    $queryList .= " and (Tags LIKE ? or Tags LIKE ? or Tags LIKE ?)";
                     array_push($sqlparams, "%, $t,%", "%, $t", "$t,%");
                 }
 
@@ -100,14 +116,14 @@ if (!empty($by_tags)) {
                 //Result can include any tags
             case "1":
                 $t = trim($alltags[0]);
-                $queryList = $queryList . " and ((Tags LIKE ? or Tags LIKE ? or Tags LIKE ?)";
+                $queryList .= " and ((Tags LIKE ? or Tags LIKE ? or Tags LIKE ?)";
                 array_push($sqlparams, "%, $t,%", "%, $t", "$t,%");
                 foreach (array_slice($alltags, 1) as $t) {
                     $t = trim($t);
-                    $queryList = $queryList . " or (Tags LIKE ? or Tags LIKE ? or Tags LIKE ?)";
+                    $queryList .= " or (Tags LIKE ? or Tags LIKE ? or Tags LIKE ?)";
                     array_push($sqlparams, "%, $t,%", "%, $t", "$t,%");
                 }
-                $queryList = $queryList . ")";
+                $queryList .= ")";
 
 
                 break;
@@ -115,7 +131,7 @@ if (!empty($by_tags)) {
             case "2":
                 foreach ($alltags as $t) {
                     $t = trim($t);
-                    $queryList = $queryList . " and (Tags NOT LIKE ? and Tags NOT LIKE ? and Tags NOT LIKE ?)";
+                    $queryList .= " and (Tags NOT LIKE ? and Tags NOT LIKE ? and Tags NOT LIKE ?)";
                     array_push($sqlparams, "%, $t,%", "%, $t", "$t,%");
                 }
                 break;
@@ -128,20 +144,20 @@ if (!empty($by_tags)) {
                 foreach ($alltags as $t) {
                     $t = trim($t);
                     foreach ($alltags as $t) {
-                        $queryList = $queryList . " and (Tags LIKE ?)";
-                        $sqlparams[] = "%$t%"; 
+                        $queryList .= " and (Tags LIKE ?)";
+                        $sqlparams[] = "%$t%";
                     }
                 }
 
                 break;
                 //Result can include any tags
             case "1":
-                $queryList = $queryList . " and ((Tags LIKE ?)";
+                $queryList .= " and ((Tags LIKE ?)";
                 $t = trim($alltags[0]);
-                $sqlparams[] = "%$t%"; 
+                $sqlparams[] = "%$t%";
                 foreach (array_slice($alltags, 1) as $t) {
                     $t = trim($t);
-                    $queryList = $queryList . " or (Tags LIKE ?)";
+                    $queryList .= " or (Tags LIKE ?)";
                     $sqlparams[] = "%$t%";
                 }
                 $queryList = $queryList . ")";
@@ -152,7 +168,7 @@ if (!empty($by_tags)) {
             case "2":
                 foreach ($alltags as $t) {
                     $t = trim($t);
-                    $queryList = $queryList . " and (Tags NOT LIKE ?)";
+                    $queryList .= " and (Tags NOT LIKE ?)";
                     $sqlparams[] = "%$t%";
                 }
                 break;
@@ -162,7 +178,7 @@ if (!empty($by_tags)) {
 
 // NSFW Filter
 if (!empty($NsfwSetting) && $NsfwSetting != "0") {
-    $queryList = $queryList . " and NSFW = ?";
+    $queryList .= " and NSFW = ?";
     $sqlparams[] = (int)$NsfwSetting - 1;
 }
 
@@ -175,7 +191,11 @@ else
 $totalcount = $totalcount->numRows();
 
 // We use Limit to return only the $limit of prompt to display on current page
-$queryList = $queryList . " order by CorrelationID desc LIMIT ?,?";
+$queryList .= " order by CorrelationID ";
+if ($reverse == "false")
+    $queryList .= "desc ";
+$queryList .= "LIMIT ?,?";
+
 array_push($sqlparams, $start_from, $limit);
 $prompts = $db->query($queryList, $sqlparams)->fetchAll();
 $db->close();
@@ -188,15 +208,6 @@ $db->close();
     <title>Home</title>
     <link rel="stylesheet" href="css/bootstrap.dark.css">
     <link rel="stylesheet" href="css/style.css">
-    <style>
-        .droite {
-   margin-left: 1rem;
-}
-.droite2 
-{
-   margin-left: 2.25rem;
-}
-</style>
 </head>
 
 <body>
@@ -205,48 +216,48 @@ $db->close();
     <!--Structure is the same as old club-->
     <div class="container">
         <main role="main" class="pb-3">
-        <form method="post" action="Index.php">
+            <form method="post" action="Index.php">
                 <div class="row mb-4">
                     <div class="col-sm-9 col-md-10">
                         <div class="row">
                             <div class="col-sm-6 mb-4">
-                                <input class="form-control" placeholder="Search Title" type="text" id="Query" name="Query" value="<?php echo $by_title?>" />
+                                <input class="form-control" placeholder="Search Title" type="text" id="Query" name="Query" value="<?php echo $by_title ?>" />
                             </div>
                             <div class="col-sm-6 mb-4">
                                 <select class="form-control" data-val="true" data-val-required="The NsfwSetting field is required." id="NsfwSetting" name="NsfwSetting">
-                                    <option <?php if($NsfwSetting==0) echo "selected ";?> value="0">SFW &amp; NSFW</option>
-                                    <option  <?php if($NsfwSetting==1) echo "selected ";?> value="1">SFW only</option>
-                                    <option  <?php if($NsfwSetting==2) echo "selected ";?> value="2">NSFW only</option>
+                                    <option <?php if ($NsfwSetting == 0) echo "selected "; ?> value="0">SFW &amp; NSFW</option>
+                                    <option <?php if ($NsfwSetting == 1) echo "selected "; ?> value="1">SFW only</option>
+                                    <option <?php if ($NsfwSetting == 2) echo "selected "; ?> value="2">NSFW only</option>
                                 </select>
                             </div>
                             <div class="col-sm-6 mb-4">
-                                <input class="form-control" placeholder="Tags (comma delimited)" type="text" id="Tags" name="Tags" value="<?php echo $by_tags?>" />
+                                <input class="form-control" placeholder="Tags (comma delimited)" type="text" id="Tags" name="Tags" value="<?php echo $by_tags ?>" />
                             </div>
                             <div class="col-sm-6 mb-4">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" checked="checked" data-val="true" data-val-required="The Match Tags Exactly field is required." id="MatchExact" name="MatchExact" value="true" />
+                                    <input class="form-check-input" type="checkbox" <?php if ($exact_tags != "false" || empty(array_diff($_GET, ['']))) echo 'checked="checked"' ?> data-val="true" data-val-required="The Match Tags Exactly field is required." id="MatchExact" name="MatchExact" value="true" />
                                     <label class="form-check-label" for="MatchExact">Match Tags Exactly</label>
-                                    <input class="form-check-input droite" type="checkbox" data-val="true" data-val-required="The Reverse Results field is required." id="Reverse" name="Reverse" value="true" />
+                                    <input class="form-check-input droite" type="checkbox" <?php if ($reverse != "false") echo 'checked="checked"' ?> data-val="true" data-val-required="The Reverse Results field is required." id="Reverse" name="Reverse" value="true" />
                                     <label class="form-check-label droite2" for="Reverse">Reverse Results</label>
                                 </div>
-                              
-                                   
-                           
+
+
+
                             </div>
                             <div class="col-sm-6 mb-4">
                                 <select class="form-control" data-val="true" data-val-required="The Inclusive/Exclusive Tags field is required." id="TagJoin" name="TagJoin">
-                                    <option <?php if($tag_join==0) echo "selected ";?> value="0" >Results must include all tags</option>
-                                    <option <?php if($tag_join==1) echo "selected ";?> value="1">Results can include any tag</option>
-                                    <option <?php if($tag_join==2) echo "selected ";?> value="2">Results exclude all tags</option>
+                                    <option <?php if ($tag_join == 0) echo "selected "; ?> value="0">Results must include all tags</option>
+                                    <option <?php if ($tag_join == 1) echo "selected "; ?> value="1">Results can include any tag</option>
+                                    <option <?php if ($tag_join == 2) echo "selected "; ?> value="2">Results exclude all tags</option>
                                 </select>
                             </div>
                             <div class="col-sm-6 mb-4">
-                   
-                     
-                        <input class="form-control" placeholder="CodeEdit" type="text" id="CodeEdit" name="CodeEdit" value="<?php echo $code?>" />
-                         
+
+
+                                <input class="form-control" placeholder="CodeEdit" type="text" id="CodeEdit" name="CodeEdit" value="<?php echo $code ?>" />
+
                             </div>
-                   
+
                         </div>
                     </div>
                     <div class="col-sm-3 col-md-2 mb-4 d-flex flex-row-reverse flex-sm-column">
@@ -255,8 +266,8 @@ $db->close();
                         </div>
                         <div class="d-flex flex-sm-row-reverse mt-sm-auto mr-auto mr-sm-0">
 
-                            <button class="btn btn-outline-secondary" formaction="/home/random">Random</button>
-                           
+                            <button class="btn btn-outline-secondary" name="Random">Random</button>
+
                         </div>
                     </div>
                 </div>
@@ -266,7 +277,7 @@ $db->close();
             <div class="row">
                 <?php
                 foreach ($prompts as $prompt) {
-                    
+
                     $tags = preg_split("/\,/", $prompt['Tags']);
                 ?>
                     <div class="col-sm-12 col-md-6 mb-4">
@@ -277,10 +288,10 @@ $db->close();
                                         <h5 class="card-title"><?php echo htmlspecialchars($prompt['Title']); ?></h5>
 
                                     </a>
-                                    <?php if(!isset($prompt['PublishDate'])) { ?>
-                                    <h4>
-						                <span class="badge badge-warning">Draft</span>
-					                </h4>
+                                    <?php if (!isset($prompt['PublishDate'])) { ?>
+                                        <h4>
+                                            <span class="badge badge-warning">Draft</span>
+                                        </h4>
                                     <?php } ?>
                                 </div>
                                 <p tabindex="-1" class="tags truncated">
@@ -289,23 +300,26 @@ $db->close();
                                     Tags:
                                     <?php
                                     if ($prompt['Nsfw'] > 0) { ?>
-                                        <a class="badge badge-danger"  href="\AIDSprompts?NsfwSetting=2">NSFW</a> <?php } ?>
+                                        <a class="badge badge-danger" href="\AIDSprompts?NsfwSetting=2">NSFW</a> <?php } ?>
                                     <?php
 
-                                    foreach ($tags as $t) {   if(!empty($t)) {?>
-                                        <a class="badge badge-primary" href="<?php echo "?Tags=" . $t . "&MatchExact=true"; ?>"> <?php echo htmlspecialchars($t); ?> </a>
+                                    foreach ($tags as $t) {
+                                        if (!empty($t)) { ?>
+                                            <a class="badge badge-primary" href="<?php echo "?Tags=" . $t . "&MatchExact=true"; ?>"> <?php echo htmlspecialchars($t); ?> </a>
 
-                                    <?php }} ?>
+                                    <?php }
+                                    } ?>
                                 </p>
-                                
-                                <p class="card-text pre-line truncated"><?php if($prompt['Description']!="") echo htmlspecialchars($prompt['Description']); else echo htmlspecialchars($prompt['PromptContent'])  ?></p>
+
+                                <p class="card-text pre-line truncated"><?php if ($prompt['Description'] != "") echo htmlspecialchars($prompt['Description']);
+                                                                        else echo htmlspecialchars($prompt['PromptContent'])  ?></p>
                             </div>
                             <div class="card-footer bg-transparent d-flex border-0">
                                 <div class="ml-auto"></div>
-                               <?php If  (isset($_SESSION['CodeEdit'])) { ?>
-                                <a class="btn btn-outline-success mr-2 px-3" href="<?php echo "Edit.php?ID=".$prompt['CorrelationID']; ?>">Edit</a>
-                                <?php }?>
-                                <a class="align-self-end btn btn-primary" href="/3871">View Prompt</a>
+                                <?php if (isset($_SESSION['CodeEdit'])) { ?>
+                                    <a class="btn btn-outline-success mr-2 px-3" href="<?php echo "Edit.php?ID=" . $prompt['CorrelationID']; ?>">Edit</a>
+                                <?php } ?>
+                                <a class="align-self-end btn btn-primary" href="<?php echo "Prompt.php?ID=" . $prompt['CorrelationID']; ?>">View Prompt</a>
 
                             </div>
                         </div>
@@ -369,5 +383,6 @@ $db->close();
         </main>
     </div>
 
-     </body>
+</body>
+
 </html>
