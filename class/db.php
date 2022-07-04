@@ -159,7 +159,7 @@ Function to get all wordinfos from a correlationID
 	// Function to get the number of wordinfos of a correlationID
 	public function NbworldInfos($ID)
 	{
-		$querryWI = "SELECT Distinct Id FROM worldinfos where PromptID = ? Order by CorrelationId";
+		$querryWI = "SELECT Distinct Id FROM worldinfos where PromptID = ?";
 		$ResultWI = $this->query($querryWI, array($ID));
 		$nb = $ResultWI->numRows();
 		return $nb;

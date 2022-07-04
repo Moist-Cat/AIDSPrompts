@@ -2,3 +2,5 @@
    define('DBPWD','');
    define('DBHOST','localhost');
    define('DBNAME','aiprompts'); 
+   define('SITENAME','AI Prompts'); 
+?>

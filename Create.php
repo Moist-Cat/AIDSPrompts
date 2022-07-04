@@ -127,7 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (!isset($_POST["Command_Parent"])) {
 
         $sql = "INSERT INTO editcode (PromptID, CodeEdit) VALUES(?,?);";
-        $insert = $db->query($sql, array($idNow, $editcode));
+        $insert = $db->query($sql, array($idNow, password_hash($editcode,  PASSWORD_DEFAULT)));
     }
 
     //Session to have right to view if draft
@@ -166,7 +166,7 @@ else if (isset($_GET['IDParent'])) {
     else
         $EditCode =  $db->firstParentEditCode($rprompt['ParentID']);
     $db->close();
-    if ($_SESSION['CodeEdit'] != $EditCode)
+    if (!password_verify($_SESSION['CodeEdit'], $EditCode)) 
         die("Bad Request");
 }
 ?>

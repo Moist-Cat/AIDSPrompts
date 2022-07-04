@@ -28,7 +28,7 @@ if (is_null($promptInfos['ParentID'])) {
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // We set the session and redirect to the Edit page.
-    if ($_POST["Command_GenerateCode"] == $EditCode) {
+    if (password_verify($_POST["Command_GenerateCode"], $EditCode)) {
         $_SESSION['CodeEdit'] = $_POST["Command_GenerateCode"];
         $url = "Edit.php?ID=" . $IDprompt;
         header("Location: $url");
@@ -83,14 +83,14 @@ if ($EditCode != 0) {
     if (is_null($publish)) {
         if (!isset($_SESSION['CodeEdit']))
             die("Bad Request");
-        else if ($_SESSION['CodeEdit'] != $EditCode)
+        else if (!password_verify($_SESSION['CodeEdit'], $EditCode))
             die("Bad Request");
     }
 }
 
 //If the good CodeEdit is already in session you don't need to re-enter it to edit the prompt.
 if (isset($_SESSION['CodeEdit'])) {
-    if ($_SESSION['CodeEdit'] == $EditCode)
+    if (password_verify($_SESSION['CodeEdit'], $EditCode))
         $goodCode = "true";
 }
 
@@ -271,7 +271,7 @@ $db->close();
                                 <h5 class="m-0"><?php echo  htmlspecialchars($Sub['Title']); ?> </h5>
                             </a>
                             <div class="m-auto">
-                                <a class="btn btn btn-info"  href="<?php echo "Prompt.php?ID=" . $Sub['CorrelationID']; ?>">
+                                <a class="btn btn btn-info" href="<?php echo "Prompt.php?ID=" . $Sub['CorrelationID']; ?>">
                                     View
                                 </a>
                             </div>

@@ -82,8 +82,7 @@ $db = new db();
 $queryList = 'SELECT Distinct *, 1 FROM prompts where ParentID is Null and PublishDate is not null ';
 if (isset($_SESSION['CodeEdit'])) {
     $code = $_SESSION['CodeEdit'];
-    $queryList = 'SELECT Distinct *  FROM prompts , editcode where ParentID is Null and BINARY CodeEdit =? and PromptID = prompts.Id ';
-    $sqlparams[] = $_SESSION['CodeEdit'];
+    $queryList = 'SELECT Distinct *  FROM prompts , editcode where ParentID is Null and PromptID = prompts.Id ';
 }
 
 // If filter for the Title is actived we add the condition
@@ -276,8 +275,12 @@ $db->close();
 
             <div class="row">
                 <?php
+                    if ($code!="")
+                    $totalcount =0;
                 foreach ($prompts as $prompt) {
-
+                    if ((($code!="" && password_verify($code, $prompt['CodeEdit'])) || $code=="")) {
+                        if ($code!="" && password_verify($code, $prompt['CodeEdit']))
+                        $totalcount++;
                     $tags = preg_split("/\,/", $prompt['Tags']);
                 ?>
                     <div class="col-sm-12 col-md-6 mb-4">
@@ -300,7 +303,7 @@ $db->close();
                                     Tags:
                                     <?php
                                     if ($prompt['Nsfw'] > 0) { ?>
-                                        <a class="badge badge-danger" href="\AIDSprompts?NsfwSetting=2">NSFW</a> <?php } ?>
+                                        <a class="badge badge-danger" href="?NsfwSetting=2">NSFW</a> <?php } ?>
                                     <?php
 
                                     foreach ($tags as $t) {
@@ -324,7 +327,7 @@ $db->close();
                             </div>
                         </div>
                     </div>
-                <?php } ?>
+                <?php }} ?>
             </div>
 
             <?php

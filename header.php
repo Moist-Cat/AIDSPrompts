@@ -1,7 +1,7 @@
 <header>
     <nav class="navbar navbar-dark navbar-expand-sm navbar-toggleable-sm border-bottom box-shadow mb-3">
         <div class="container">
-            <a class="navbar-brand" href="/AIDSPrompts">/aids/ Prompts</a>
+	        <a class="navbar-brand" href="./"><?php echo(SITENAME)?></a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>

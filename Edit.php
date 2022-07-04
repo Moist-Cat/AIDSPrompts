@@ -37,7 +37,7 @@ if ($CodeEdit == 0)
 // If no session for Edit Code or bad Code we don't give access to the page
 if (!isset($_SESSION['CodeEdit']))
     die("Bad Request");
-else if ($_SESSION['CodeEdit'] != $CodeEdit)
+else if (!password_verify($_SESSION['CodeEdit'], $CodeEdit))
     die("Bad Request");
 
 // We get all the Worldinfos and Subscenarios of the selected prompt.
@@ -59,7 +59,7 @@ if (isset($_POST['subPrompts']) || isset($_POST['subDraft'])) {
     $nsfw = isset($_POST['Command_Nsfw']) ? 1 : 0;
 
     // Querry to determine CorrelationID for the WIs we will insert.
-    $querryMaxWID = "Select MAX(CorrelationID) as Max from worldinfos";
+    $querryMaxWID = "Select MAX(CorrelationId) as Max from worldinfos";
     $newWorldCorrelationID = ($db->query($querryMaxWID)->fetchArray()['Max']) + 1;
 
     // We manage tags only if it is not a subscenario, same as old club.
@@ -132,7 +132,6 @@ VALUES(?, ?, ?, ?, ?);";
     }
 
     // We go to the edited prompt
-    $_SESSION['CodeEdit'] = $CodeEdit;
     $db->close();
     header('Location: Prompt.php?ID=' . $promptInfos['CorrelationID']);
 
