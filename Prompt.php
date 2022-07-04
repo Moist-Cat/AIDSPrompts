@@ -74,12 +74,12 @@ $publish = $promptInfos['PublishDate'];
 
 // If subscenario we get the PublishDate of the first Parent. SubScenario are managed as draft if the first parent is draft and as publish if the first parent is published.
 $publishParent = $db->firstParentPublishDate($promptInfos['ParentID']);
-if ($publishParent != 0 || is_null($publishParent)) {
+if ($publishParent != "" || is_null($publishParent)) {
     $publish = $publishParent;
 }
 
 // If no EditCode in session and the prompt is a draft then you can't display it.
-if ($EditCode != 0) {
+if ($EditCode != "") {
     if (is_null($publish)) {
         if (!isset($_SESSION['CodeEdit']))
             die("Bad Request");
@@ -134,7 +134,7 @@ $db->close();
                     <p> <?php echo "Published on ", substr($promptInfos['PublishDate'], 0, 10); ?></p>
                 </div>
                 <div class="ml-auto d-flex">
-                    <?php if ($EditCode != 0 && !isset($goodCode)) { ?>
+                    <?php if ($EditCode != "" && !isset($goodCode)) { ?>
                         <div>
 
                             <form method="POST" name="PEdit" id="EditForm" action="<?php echo 'Prompt.php?ID=' . $IDprompt ?>" class="needs-validation" novalidate>

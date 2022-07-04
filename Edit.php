@@ -32,7 +32,7 @@ if (isset($_POST['DeleteBtn'])) {
 
 // We get the Edit code of the prompt, if the function return 0 it mean we are in a subscenario. So we get the Edit Code of the first parent.
 $CodeEdit = $db->EditCode($promptInfos['Id']);
-if ($CodeEdit == 0)
+if ($CodeEdit == "")
     $CodeEdit =  $db->firstParentEditCode($promptInfos['ParentID']);
 // If no session for Edit Code or bad Code we don't give access to the page
 if (!isset($_SESSION['CodeEdit']))

@@ -182,7 +182,7 @@ Function to get all wordinfos from a correlationID
 		$querryEditCode = "SELECT Distinct CodeEdit FROM editcode where PromptID = ?";
 		$EditCode = $this->query($querryEditCode, array($ID));
 		if ($EditCode->numRows() == 0)
-			return 0;
+			return "";
 		else
 			return $EditCode->fetchArray()['CodeEdit'];
 	}
@@ -205,7 +205,7 @@ Function to get all wordinfos from a correlationID
 	{
 		$firstParentID = $this->firstParent($ParentId);
 		if ($firstParentID == 0)
-			return 0;
+			return "";
 		return $this->EditCode($firstParentID);
 	}
 
@@ -214,7 +214,7 @@ Function to get all wordinfos from a correlationID
 	{
 		$firstParentID = $this->firstParent($ParentId);
 		if ($firstParentID == 0)
-			return 0;
+			return "";
 		$querryPrompt =  "SELECT Distinct PublishDate FROM prompts where CorrelationID = ?";
 		return 	$this->query($querryPrompt, array($ParentId))->fetchArray()['PublishDate'];
 	}
