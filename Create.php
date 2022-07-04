@@ -1,6 +1,6 @@
 <?php
 // Class for secure MYSQL queries : Info on Connection on config.php
-require 'class\db.php';
+require 'class/db.php';
 
 // When the submit or the draft button is clicked. We begin the procedure to insert the data.
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
