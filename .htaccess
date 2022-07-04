@@ -1,0 +1,6 @@
+RewriteEngine On
+RewriteRule ^([0-9]+)$ Prompt.php?ID=$1
+RewriteRule ^create Create.php
+RewriteRule ^prompts/create Create.php
+RewriteRule ^news News.php
+RewriteRule ^whats-new News.php
