@@ -59,7 +59,7 @@ if (isset($_POST['subPrompts']) || isset($_POST['subDraft'])) {
     $nsfw = isset($_POST['Command_Nsfw']) ? 1 : 0;
 
     // Querry to determine CorrelationID for the WIs we will insert.
-    $querryMaxWID = "Select MAX(CorrelationID) as Max from worldinfos";
+    $querryMaxWID = "Select MAX(CorrelationId) as Max from worldinfos";
     $newWorldCorrelationID = ($db->query($querryMaxWID)->fetchArray()['Max']) + 1;
 
     // We manage tags only if it is not a subscenario, same as old club.
