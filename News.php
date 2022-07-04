@@ -1,5 +1,5 @@
 <?php
-require 'class\db.php';
+require 'class/db.php';
 $db = new db();
 //News are in the table news. Each return to line is morphed into a <li>
 $querryNews = "SELECT Distinct * FROM news";
