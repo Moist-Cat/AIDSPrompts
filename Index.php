@@ -300,7 +300,7 @@ $db->close();
                                     Tags:
                                     <?php
                                     if ($prompt['Nsfw'] > 0) { ?>
-                                        <a class="badge badge-danger" href="\AIDSprompts?NsfwSetting=2">NSFW</a> <?php } ?>
+                                        <a class="badge badge-danger" href="?NsfwSetting=2">NSFW</a> <?php } ?>
                                     <?php
 
                                     foreach ($tags as $t) {
