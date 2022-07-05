@@ -1,6 +1,6 @@
 <?php
 //Name of database, password etc.
-include('config\config.php');
+include('config/config.php');
 class db
 {
 

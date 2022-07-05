@@ -1,5 +1,5 @@
 <?php
-include('config\config.php');
+include('config/config.php');
 class DatabaseBackup
 {
 
@@ -79,7 +79,7 @@ class DatabaseBackup
                     if (isset($row[$j])) {
                         $fileString .= "'" . str_replace("'", "\'", str_replace('\\', '\\\\', $row[$j])) . "'";
                     } else {
-                        $fileString .= "''";
+                        $fileString .= "NULL";
                     }
                     if ($j < ($fieldCount - 1)) {
                         $fileString .= ',';

@@ -1,7 +1,7 @@
 <?php
 
 // Class for secure MYSQL queries : Info Connection on config.php
-require 'class\db.php';
+require 'class/db.php';
 session_start();
 
 

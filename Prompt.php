@@ -5,7 +5,7 @@ session_start();
 Don't know how clubanon did for 'dynamic' URL*/
 $IDprompt =  isset($_GET['ID']) ? $_GET['ID'] : "10";
 // Php Class for all that is database related, use prepared statements to protect against injection. Info Connection on config.php
-require 'class\db.php';
+require 'class/db.php';
 // Connection to MYSQL database
 $db = new db();
 
