@@ -25,7 +25,7 @@ $nsfw = 'true';
 $Winfos = $db->worldInfos($promptInfos['Id']);
 $Subs =  $db->subScenarios($IDprompt);
 $tags = preg_split("/\,/", $promptInfos['Tags']);
-$kobold = '{"authorsNote":"'. str_replace('"', '\"', str_replace(PHP_EOL, "\\n", $promptInfos['AuthorsNote'])) . '","children":[';
+$kobold = '{"authorsNote":"'. str_replace('"', '\"', str_replace("\n", "\\n", $promptInfos['AuthorsNote'])) . '","children":[';
 if ($Subs!=0)
 foreach ($Subs as $Sub)
 {
@@ -33,8 +33,8 @@ foreach ($Subs as $Sub)
 }
 $kobold =  substr($kobold, 0, -1);
 $kobold.= '],"dateCreated":"' . $promptInfos['DateCreated'] . '","description":"' . 
-    str_replace('"', '\"', str_replace(PHP_EOL, "\\n", $promptInfos['Description'])) . '","hasScriptFile":false,"id":' . $IDprompt . ',"isDraft":false,"memory":"' . str_replace('"', '\"', str_replace(PHP_EOL, "\\n", $promptInfos['Memory'])). '","nsfw":' . $nsfw . ',"ownerId":1,"parentId":' 
-    . $promptInfos['ParentID'] . ',"promptContent":"' . str_replace('"', '\"', str_replace(PHP_EOL, "\\n", $promptInfos['PromptContent'])) . '","promptTags":[';
+    str_replace('"', '\"', str_replace("\n", "\\n", $promptInfos['Description'])) . '","hasScriptFile":false,"id":' . $IDprompt . ',"isDraft":false,"memory":"' . str_replace('"', '\"', str_replace("\n", "\\n", $promptInfos['Memory'])). '","nsfw":' . $nsfw . ',"ownerId":1,"parentId":' 
+    . $promptInfos['ParentID'] . ',"promptContent":"' . str_replace('"', '\"', str_replace("\n", "\\n", $promptInfos['PromptContent'])) . '","promptTags":[';
 
     foreach ($tags as $tag)
     {
@@ -46,7 +46,7 @@ $kobold.= '],"dateCreated":"' . $promptInfos['DateCreated'] . '","description":"
     if ($Winfos != 0)
     foreach ($Winfos as $WI)
     {
-        $kobold.='{"entry":"'.  str_replace('"', '\"', str_replace(PHP_EOL, "\\n",$WI['Entry'])) . '","id":' . $WI['Id'] . ',"keys":"' . $WI['WKeys'] . '","keysList":["';
+        $kobold.='{"entry":"'.  str_replace('"', '\"', str_replace("\n", "\\n",$WI['Entry'])) . '","id":' . $WI['Id'] . ',"keys":"' . $WI['WKeys'] . '","keysList":["';
         $keys = preg_split("/\,/", $WI['WKeys'] );
         foreach ($keys as $key)
         $kobold.= $key . '",';
