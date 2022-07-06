@@ -97,12 +97,55 @@ if (isset($_POST['subPrompts']) || isset($_POST['subDraft'])) {
 
     // Update querry for prompts table
     $sql = "UPDATE prompts
-  SET AuthorsNote=?, Description=?, Memory=?, Nsfw=?, PromptContent=?, Tags=?, Title=?, DateEdited=?";
-    // If a file was uploaded we update it into the database. Right now I don't update using only the field. Update soon tm.
+  SET AuthorsNote=?, Description=?, Memory=?, Nsfw=?, PromptContent=?, Tags=?, Title=?, DateEdited=?, NovelAIScenario=?";
+    // Update .scenario in the database. Will move it into a function later
     if ($file != "") {
-        $sql = $sql . ", NovelAIScenario=?";
-        $sqlparams[] = $file;
+
+        $promptInfos['NovelAIScenario'] = $file;
     }
+
+    if ($promptInfos['Title'] != $title) {
+        $promptInfos['NovelAIScenario'] = preg_replace('/(?<="title":"|"title":\s").*?(?=", *")/', str_replace('"', '\"', str_replace(PHP_EOL, "\\n", $title)), $promptInfos['NovelAIScenario']);
+    }
+    if ($promptInfos['PromptContent'] != $prompt) {
+        $promptInfos['NovelAIScenario'] = preg_replace('/(?<="prompt":"|"prompt":\s").*?(?=", *")/', str_replace('"', '\"', str_replace(PHP_EOL, "\\n", $prompt)), $promptInfos['NovelAIScenario']);
+    }
+    if ($promptInfos['Description'] != $description) {
+        $promptInfos['NovelAIScenario'] = preg_replace('/(?<="description":"|"description":\s").*?(?=", *")/', str_replace('"', '\"', str_replace(PHP_EOL, "\\n", $description)), $promptInfos['NovelAIScenario']);
+    }
+    if ($promptInfos['Memory'] != $memory) {
+        $promptInfos['NovelAIScenario'] = preg_replace('/(?<="context":).*?\K(?<="text":"|"text":\s").*?(?=" *, *")/', str_replace('"', '\"', str_replace(PHP_EOL, "\\n", $memory)), $promptInfos['NovelAIScenario']);
+    }
+    if ($promptInfos['AuthorsNote'] != $author) {
+        $promptInfos['NovelAIScenario'] = preg_replace('/(?<=}},\s{|}},{).*?\K(?<="text":"|"text":\s").*?(?=" *, *")/', str_replace('"', '\"', str_replace(PHP_EOL, "\\n", $author)), $promptInfos['NovelAIScenario']);
+    }
+
+    if ($NbWI == ($cwi + 1)) {
+        preg_match('/(?<="entries":\s\[|"entries":\[).*?(?=\]})/', $promptInfos['NovelAIScenario'], $m);
+        $fWinf = $m[0];
+        preg_match_all('/(?<="text":"|"text":\s").*?(?=", *")/', $m[0], $t);
+        preg_match_all('/(?<="keys":\[|"keys":\s\[).*?(?=], *")/', $m[0], $k);
+
+        for ($i = 0; $i <= $cwi; $i++) {
+
+            $fWinf = preg_replace('/(?<="keys":\[|"keys":\s\[)' . $k[0][$i] . '(?=], *")/',  '"' . preg_replace('!\s+!', ' ', str_replace('"', '\"', str_replace(PHP_EOL, "\\n", $_POST["Command__WIK" . $i]))) .  '"', $fWinf);
+            $fWinf = preg_replace('/(?<="text":"|"text":\s")' . $t[0][$i] . '(?=", *")/', str_replace('"', '\"', str_replace(PHP_EOL, "\\n", $_POST["Command__WI" . $i])), $fWinf);
+        }
+        $promptInfos['NovelAIScenario'] = str_replace($m[0], $fWinf, $promptInfos['NovelAIScenario']);
+    } else {
+        $replace = "";
+        for ($i = 0; $i <= $cwi; $i++) {
+            if ($_POST["Command__WIK" . $i] != "" || $_POST["Command__WI" . $i] != "") {
+                $key =   preg_replace('!\s+!', ' ', str_replace('"', '\"', str_replace(PHP_EOL, "\\n", $_POST["Command__WIK" . $i])));
+                $replace = $replace . '{"text": "' . str_replace('"', '\"', str_replace(PHP_EOL, "\\n", $_POST["Command__WI" . $i])) . '", "keys": ["' . $key . '"], "displayName":"' .  preg_split("/\,/", $key)[0] . '" }';
+                if (($i + 1) <= $cwi && $_POST["Command__WIK" . ($i + 1)] != "" && $_POST["Command__WI" . ($i + 1)] != "")
+                    $replace = $replace . ',';
+            }
+        }
+        $promptInfos['NovelAIScenario'] = preg_replace('/(?<="entries":\s\[|"entries":\[).*?(?=\]})/', $replace, $promptInfos['NovelAIScenario']);
+    }
+
+    $sqlparams[] = $promptInfos['NovelAIScenario'];
     // If it is a draft there is no PublishDate
     if (isset($_POST['subDraft']))
         $sql = $sql . ",PublishDate=NULL";
