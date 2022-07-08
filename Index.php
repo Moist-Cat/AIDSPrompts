@@ -57,6 +57,7 @@ $data = array(
 
 //List of variable for MySQLi Prepared Statements
 $sqlparams = array();
+$prompts = array();
 $code = "";
 // Declare a variable for our current page. If no page is set, the default is page 1
 $current_page = isset($_GET['page']) ? $_GET['page'] : 1;
@@ -183,20 +184,40 @@ if (!empty($NsfwSetting) && $NsfwSetting != "0") {
 
 
 // We send the query without the Limit to count the number of prompt to display
+
 if (empty($sqlparams))
     $totalcount = $db->query($queryList);
 else
     $totalcount = $db->query($queryList, $sqlparams);
-$totalcount = $totalcount->numRows();
+if ($code == "") {
+    $totalcount = $totalcount->numRows();
+} else {
+    $totalcount = 0;
+    if (empty($sqlparams))
+        $totals = $db->query($queryList)->fetchAll();
+    else
+        $totals = $db->query($queryList, $sqlparams)->fetchAll();
+    foreach ($totals as $total) {
+        if (password_verify($code, $total['CodeEdit'])) {
+            $totalcount++;
+            array_push($prompts, $total);
+        }
+    }
+}
+
+
 
 // We use Limit to return only the $limit of prompt to display on current page
-$queryList .= " order by CorrelationID ";
-if ($reverse == "false")
-    $queryList .= "desc ";
-$queryList .= "LIMIT ?,?";
-
-array_push($sqlparams, $start_from, $limit);
-$prompts = $db->query($queryList, $sqlparams)->fetchAll();
+if (!$prompts) {
+    $queryList .= " order by CorrelationID ";
+    if ($reverse == "false")
+        $queryList .= "desc ";
+    $queryList .= "LIMIT ?,?";
+    array_push($sqlparams, $start_from, $limit);
+    $prompts = $db->query($queryList, $sqlparams)->fetchAll();
+} else {
+    $prompts = array_splice($prompts, $start_from, $limit);
+}
 $db->close();
 ?>
 
@@ -275,12 +296,10 @@ $db->close();
 
             <div class="row">
                 <?php
-                    if ($code!="")
-                    $totalcount =0;
+
                 foreach ($prompts as $prompt) {
-                    if ((($code!="" && password_verify($code, $prompt['CodeEdit'])) || $code=="")) {
-                        if ($code!="" && password_verify($code, $prompt['CodeEdit']))
-                        $totalcount++;
+
+
                     $tags = preg_split("/\,/", $prompt['Tags']);
                 ?>
                     <div class="col-sm-12 col-md-6 mb-4">
@@ -327,7 +346,8 @@ $db->close();
                             </div>
                         </div>
                     </div>
-                <?php }} ?>
+                <?php }
+                ?>
             </div>
 
             <?php
@@ -381,7 +401,7 @@ $db->close();
                     </ul>
                 </nav>
 
-            <?php } // End if total pages more than 1 
+            <?php }
             ?>
         </main>
     </div>
