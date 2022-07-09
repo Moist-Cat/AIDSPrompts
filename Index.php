@@ -4,42 +4,22 @@
 require 'class/db.php';
 session_start();
 
-
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-
-    //If random was pressed we use the function promptrandom in db.php to go to an existing random prompt
-    if (isset($_POST['Random'])) {
-        $db = new db();
-        $rand = $db->promptRandom();
-        $db->close();
-        header("Location: Prompt.php?ID=" . $rand);
-        exit();
-    }
-    // If an edit code was entered in the search form we push it into the session for the code.
-    if (!empty($_POST["CodeEdit"])) {
-        $_SESSION['CodeEdit'] = $_POST["CodeEdit"];
-    } else {
-        // We unset the edit code it the user deleted it from the search form.
-        if (isset(($_SESSION['CodeEdit'])))
-            unset($_SESSION['CodeEdit']);
-    }
-    // We use URL parameters to account for all the search options.
-    $url = "Index.php?Query=" . $_POST["Query"] . "&NsfwSetting=" . $_POST["NsfwSetting"] . "&Tags=" . $_POST["Tags"] . "&TagJoin=" . $_POST["TagJoin"];
-    if (isset($_POST["MatchExact"]))
-        $url .= "&MatchExact=" . $_POST["MatchExact"];
-    if (isset($_POST["Reverse"]))
-        $url .= "&Reverse=" . $_POST["Reverse"];
-    header("Location: $url");
+if (isset($_GET['Random'])) {
+    $db = new db();
+    $rand = $db->promptRandom();
+    $db->close();
+    header("Location: Prompt.php?ID=" . $rand);
     exit();
 }
 
 if (empty(array_diff($_GET, ['']))) {
-    unset($_SESSION['CodeEdit']);
+    unset($_SESSION['SearchCode']);
 }
 
 // Get all the parameters in URL for search function (title, tags, nsfw etc.)
 $by_title = isset($_GET['Query']) ? $_GET['Query'] : null;
 $by_tags =  isset($_GET['Tags']) ? $_GET['Tags'] : null;
+$searchCode = isset($_GET['SearchCode']) ? $_GET['SearchCode'] : null;
 $NsfwSetting = isset($_GET['NsfwSetting']) ? $_GET['NsfwSetting'] : "0";
 // Same for seach option (Match Exact tags etc.)
 $exact_tags =  isset($_GET['MatchExact']) ? $_GET['MatchExact'] : "false";
@@ -52,12 +32,13 @@ $data = array(
     'Tags' => $by_tags,
     'MatchExact' => $exact_tags,
     'TagJoin' => $tag_join,
-    'NsfwSetting' => $NsfwSetting
+    'NsfwSetting' => $NsfwSetting,
+    'SearchCode' => $searchCode
 );
 
 //List of variable for MySQLi Prepared Statements
 $sqlparams = array();
-$code = "";
+$prompts = array();
 // Declare a variable for our current page. If no page is set, the default is page 1
 $current_page = isset($_GET['page']) ? $_GET['page'] : 1;
 
@@ -80,9 +61,13 @@ $db = new db();
 // Select used to diplay the prompts on the page
 
 $queryList = 'SELECT Distinct *, 1 FROM prompts where ParentID is Null and PublishDate is not null ';
-if (isset($_SESSION['CodeEdit'])) {
-    $code = $_SESSION['CodeEdit'];
-    $queryList = 'SELECT Distinct *  FROM prompts , editcode where ParentID is Null and PromptID = prompts.Id ';
+if (!empty($searchCode)) {
+    $_SESSION['SearchCode'] = $searchCode;
+    $queryList = 'SELECT Distinct *  FROM prompts , editcode where ParentID is Null and PromptID = prompts.Id and SearchCode = ?';
+    $sqlparams[] = $searchCode;
+} else {
+
+    unset($_SESSION['SearchCode']);
 }
 
 // If filter for the Title is actived we add the condition
@@ -183,20 +168,25 @@ if (!empty($NsfwSetting) && $NsfwSetting != "0") {
 
 
 // We send the query without the Limit to count the number of prompt to display
+
 if (empty($sqlparams))
     $totalcount = $db->query($queryList);
 else
     $totalcount = $db->query($queryList, $sqlparams);
+
 $totalcount = $totalcount->numRows();
 
 // We use Limit to return only the $limit of prompt to display on current page
-$queryList .= " order by CorrelationID ";
-if ($reverse == "false")
-    $queryList .= "desc ";
-$queryList .= "LIMIT ?,?";
-
-array_push($sqlparams, $start_from, $limit);
-$prompts = $db->query($queryList, $sqlparams)->fetchAll();
+if (!$prompts) {
+    $queryList .= " order by CorrelationID ";
+    if ($reverse == "false")
+        $queryList .= "desc ";
+    $queryList .= "LIMIT ?,?";
+    array_push($sqlparams, $start_from, $limit);
+    $prompts = $db->query($queryList, $sqlparams)->fetchAll();
+} else {
+    $prompts = array_splice($prompts, $start_from, $limit);
+}
 $db->close();
 ?>
 
@@ -215,7 +205,7 @@ $db->close();
     <!--Structure is the same as old club-->
     <div class="container">
         <main role="main" class="pb-3">
-            <form method="post" action="Index.php">
+            <form method="get" action="Index.php">
                 <div class="row mb-4">
                     <div class="col-sm-9 col-md-10">
                         <div class="row">
@@ -253,7 +243,7 @@ $db->close();
                             <div class="col-sm-6 mb-4">
 
 
-                                <input class="form-control" placeholder="CodeEdit" type="text" id="CodeEdit" name="CodeEdit" value="<?php echo $code ?>" />
+                                <input class="form-control" placeholder="SearchCode" type="text" id="SearchCode" name="SearchCode" value="<?php echo $searchCode ?>" />
 
                             </div>
 
@@ -275,12 +265,10 @@ $db->close();
 
             <div class="row">
                 <?php
-                    if ($code!="")
-                    $totalcount =0;
+
                 foreach ($prompts as $prompt) {
-                    if ((($code!="" && password_verify($code, $prompt['CodeEdit'])) || $code=="")) {
-                        if ($code!="" && password_verify($code, $prompt['CodeEdit']))
-                        $totalcount++;
+
+
                     $tags = preg_split("/\,/", $prompt['Tags']);
                 ?>
                     <div class="col-sm-12 col-md-6 mb-4">
@@ -319,15 +307,12 @@ $db->close();
                             </div>
                             <div class="card-footer bg-transparent d-flex border-0">
                                 <div class="ml-auto"></div>
-                                <?php if (isset($_SESSION['CodeEdit'])) { ?>
-                                    <a class="btn btn-outline-success mr-2 px-3" href="<?php echo "Edit.php?ID=" . $prompt['CorrelationID']; ?>">Edit</a>
-                                <?php } ?>
                                 <a class="align-self-end btn btn-primary" href="<?php echo "Prompt.php?ID=" . $prompt['CorrelationID']; ?>">View Prompt</a>
-
                             </div>
                         </div>
                     </div>
-                <?php }} ?>
+                <?php }
+                ?>
             </div>
 
             <?php
@@ -381,7 +366,7 @@ $db->close();
                     </ul>
                 </nav>
 
-            <?php } // End if total pages more than 1 
+            <?php }
             ?>
         </main>
     </div>

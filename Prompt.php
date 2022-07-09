@@ -9,6 +9,7 @@ require 'class/db.php';
 // Connection to MYSQL database
 $db = new db();
 
+
 //Select to have all the information on the prompt
 $querryPrompt = "SELECT Distinct * FROM prompts where CorrelationID=?";
 $prompts = $db->query($querryPrompt, array($IDprompt));
@@ -18,6 +19,14 @@ if ($prompts->numRows() == 0)
     die("Bad Request");
 $promptInfos = $prompts->fetchArray();
 
+if (!isset($promptInfos['PublishDate'])) {
+    if (!isset(($_SESSION['SearchCode'])))
+        die("Bad Request");
+    if ($_SESSION['SearchCode'] != $db->SearchCode($promptInfos['Id']))
+        die("Bad Request");
+}
+
+
 // If the prompt is not a subscenario we get is EditCode and we manage the tags.
 if (is_null($promptInfos['ParentID'])) {
     $EditCode = $db->EditCode($promptInfos['Id']);
@@ -26,17 +35,20 @@ if (is_null($promptInfos['ParentID'])) {
     //Else we get the EditCode of the very First Parent
     $EditCode =  $db->firstParentEditCode($promptInfos['ParentID']);
 
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // We set the session and redirect to the Edit page.
-    if (password_verify($_POST["Command_GenerateCode"], $EditCode)) {
-        $_SESSION['CodeEdit'] = $_POST["Command_GenerateCode"];
-        $url = "Edit.php?ID=" . $IDprompt;
-        header("Location: $url");
-        exit();
-    } else {
-        $url = "Prompt.php?ID=" . $IDprompt . "&FalsePw=true";
-        header("Location: $url");
-        exit();
+    if (isset($_Post['sub2'])) {
+        // We set the session and redirect to the Edit page.
+        if (password_verify($_POST["Command_GenerateCode"], $EditCode)) {
+            $_SESSION['CodeEdit'] = $_POST["Command_GenerateCode"];
+            $url = "Edit.php?ID=" . $IDprompt;
+            header("Location: $url");
+            exit();
+        } else {
+            $url = "Prompt.php?ID=" . $IDprompt . "&FalsePw=true";
+            header("Location: $url");
+            exit();
+        }
     }
 }
 
@@ -78,15 +90,6 @@ if ($publishParent != "" || is_null($publishParent)) {
     $publish = $publishParent;
 }
 
-// If no EditCode in session and the prompt is a draft then you can't display it.
-if ($EditCode != "") {
-    if (is_null($publish)) {
-        if (!isset($_SESSION['CodeEdit']))
-            die("Bad Request");
-        else if (!password_verify($_SESSION['CodeEdit'], $EditCode))
-            die("Bad Request");
-    }
-}
 
 //If the good CodeEdit is already in session you don't need to re-enter it to edit the prompt.
 if (isset($_SESSION['CodeEdit'])) {

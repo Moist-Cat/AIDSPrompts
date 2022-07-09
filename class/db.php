@@ -187,6 +187,16 @@ Function to get all wordinfos from a correlationID
 			return $EditCode->fetchArray()['CodeEdit'];
 	}
 
+	public function SearchCode($ID)
+	{
+		$querrySearchCode = "SELECT Distinct SearchCode FROM editcode where PromptID = ?";
+		$SearchCode = $this->query($querrySearchCode, array($ID));
+		if ($SearchCode->numRows() == 0)
+			return "";
+		else
+			return $SearchCode->fetchArray()['SearchCode'];
+	}
+
 	// Function to get the first parent (older one) from a sub
 	public function firstParent($ParentId)
 	{

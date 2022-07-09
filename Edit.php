@@ -44,6 +44,7 @@ else if (!password_verify($_SESSION['CodeEdit'], $CodeEdit))
 $NbWI = $db->NbworldInfos($promptInfos['Id']);
 $Winfos = $db->worldInfos($promptInfos['Id']);
 $Subs =  $db->subScenarios($IDprompt);
+$SearchCode =  $db->SearchCode($promptInfos['Id']);
 
 // If Post by the draft or submit button
 if (isset($_POST['subPrompts']) || isset($_POST['subDraft'])) {
@@ -57,6 +58,7 @@ if (isset($_POST['subPrompts']) || isset($_POST['subDraft'])) {
     $author = $_POST['Command_AuthorsNote'];
     $dateC = (string)date("Y-m-d H:i:s");
     $nsfw = isset($_POST['Command_Nsfw']) ? 1 : 0;
+
 
     // Querry to determine CorrelationID for the WIs we will insert.
     $querryMaxWID = "Select MAX(CorrelationId) as Max from worldinfos";
@@ -173,6 +175,9 @@ VALUES(?, ?, ?, ?, ?);";
             $insert = $db->query($sql, array($entry, $key, $promptInfos['Id'], $newWorldCorrelationID, $dateC));
         }
     }
+    $sql = "UPDATE editcode
+     SET SearchCode=? WHERE PromptID=?";
+    $update = $db->query($sql, array($_POST['Command_SearchCode'], $promptInfos['Id']));
 
     // We go to the edited prompt
     $db->close();
@@ -338,8 +343,10 @@ VALUES(?, ?, ?, ?, ?);";
 
                 <br>
                 <div class="d-flex">
+                    <label for="Command_SearchCode" style="margin-left: 1.2rem;" id="lab0">Search Code :</label>
+                    <input type="text" class="form-floating mb-3" id="Command_SearchCode" name="Command.SearchCode" value="<?php echo $SearchCode ?>" />
                     <?php if (is_null($promptInfos['ParentID'])) { ?>
-                        <button id="save-draft" name="subDraft" type="submit" class="ml-auto btn btn-lg btn-outline-warning formDB">Save Draft</button> <?php } ?>
+                        <button id="save-draft" name="subDraft" type="submit" class="ml-auto btn btn-lg btn-outline-warning formDB2">Save Draft</button> <?php } ?>
                     <button type="submit" id="submitBtn" style="margin-left:1.2rem ;" name="subPrompts" class="ml-<?php if (is_null($promptInfos['ParentID'])) echo 'right';
                                                                                                                     else echo 'auto'; ?> btn btn-lg btn-primary formDB">
 

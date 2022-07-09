@@ -9,6 +9,7 @@
         var validation = Array.prototype.filter.call(forms, function (form) {
             form.addEventListener('submit', function () { }, false);
             $(".formDB").click(function (event) {
+                $("#Command_SearchCode").prop('required', false);
                 if (form.checkValidity() === false) {
                     form.classList.add('was-validated');
                     event.preventDefault();
@@ -17,6 +18,24 @@
                         behavior: 'smooth'
                     });
                 }
+                
+            });
+            $(".formDB2").click(function (event) {
+                if (form.checkValidity() === false) {
+                    form.classList.add('was-validated');
+                    event.preventDefault();
+                    event.stopPropagation();
+                    document.getElementsByClassName('invalid-feedback')[0].parentElement.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+                if ($("#Command_SearchCode").val() == "") {
+                    $("#Command_SearchCode").prop('required', true);
+                    form.classList.add('was-validated');
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                
             });
         });
 

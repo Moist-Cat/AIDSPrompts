@@ -2,6 +2,8 @@
 // Class for secure MYSQL queries : Info on Connection on config.php
 require 'class/db.php';
 
+
+
 // When the submit or the draft button is clicked. We begin the procedure to insert the data.
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
@@ -11,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $description = $_POST['Command_Description'];
     $file = $_POST['Command_File'];
     $prompt = $_POST['Command_PromptContent'];
-
+    $searchCode = $_POST['Command_SearchCode'];
     //Subscenario don't have tags
     if (!isset($_POST["Command_Parent"]))
         $tag = preg_replace('!\s+!', ' ', $_POST['Command_PromptTags']);
@@ -126,8 +128,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // We insert the edit code into the editcode table if it's not a subscenario
     if (!isset($_POST["Command_Parent"])) {
 
-        $sql = "INSERT INTO editcode (PromptID, CodeEdit) VALUES(?,?);";
-        $insert = $db->query($sql, array($idNow, password_hash($editcode,  PASSWORD_DEFAULT)));
+        $sql = "INSERT INTO editcode (PromptID, CodeEdit, SearchCode) VALUES(?,?,?);";
+        $insert = $db->query($sql, array($idNow, password_hash($editcode,  PASSWORD_DEFAULT), $searchCode));
     }
 
     //Session to have right to view if draft
@@ -140,6 +142,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         $_SESSION['CodeEdit'] = $editcode;
     }
+    if ($searchCode != "")
+        $_SESSION['SearchCode'] = $searchCode;
     header('Location: Prompt.php?ID=' . $newCorrelationID);
     exit();
 }
@@ -166,7 +170,7 @@ else if (isset($_GET['IDParent'])) {
     else
         $EditCode =  $db->firstParentEditCode($rprompt['ParentID']);
     $db->close();
-    if (!password_verify($_SESSION['CodeEdit'], $EditCode)) 
+    if (!password_verify($_SESSION['CodeEdit'], $EditCode))
         die("Bad Request");
 }
 ?>
@@ -289,18 +293,24 @@ else if (isset($_GET['IDParent'])) {
                 <br>
                 <div class="d-flex">
                     <?php if (!isset($_GET['IDParent'])) { ?>
+
                         <label for="Command_GenerateCode" id="lab0">Edit Code :</label>
                         <input type="text" class="form-floating mb-3" id="Command_GenerateCode" name="Command.GenerateCode" value="" required />
-                        <button type="button" class="btn btn-primary btn-sm mb-3" style="margin-left: 0.5rem ;" id="Generate">Generate</button>
-                        <div class="invalid-feedback" style="margin-left:1.2rem ;">Enter or generate an Edit Code.</div>
-                        <button id="save-draft" name="subDraft" type="submit" class="ml-auto btn btn-lg btn-outline-warning formDB">Save Draft</button>
-                    <?php } ?>
-                    <button type="submit" id="submitBtn" style="margin-left:1.2rem ;" name="subPrompts" class="ml-<?php if (!isset($_GET['IDParent'])) echo 'right';
-                                                                                                                    else echo 'auto'; ?> btn btn-lg btn-primary formDB">
-                        Submit
-                    </button>
+                        <button type="button" style="margin-left: 1.2rem;" class="btn btn-primary btn-sm mb-3" id="Generate">Generate</button>
 
+
+                        <label for="Command_SearchCode" style="margin-left: 1.2rem;" id="lab0">Search Code :</label>
+                        <input type="text" class="form-floating mb-3" id="Command_SearchCode" name="Command.SearchCode" value="" />
                 </div>
+                <div class="d-flex">
+                    <button id="save-draft" name="subDraft" type="submit" style="margin-right: 1.2rem;" class="btn ml-auto btn-lg btn-outline-warning formDB2">Save Draft</button>
+                <?php } ?>
+                <button type="submit" id="submitBtn" name="subPrompts" class="btn ml-right btn-lg btn-primary formDB">
+                    Submit
+                </button>
+                </div>
+
+
 
     </div>
 </body>
