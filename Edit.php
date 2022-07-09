@@ -181,6 +181,8 @@ VALUES(?, ?, ?, ?, ?);";
 
     // We go to the edited prompt
     $db->close();
+    if ($searchCode != "")
+    $_SESSION['SearchCode'] = $searchCode;
     header('Location: Prompt.php?ID=' . $promptInfos['CorrelationID']);
 
     exit();
