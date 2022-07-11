@@ -68,6 +68,10 @@ if (isset($_POST['subPrompts']) || isset($_POST['subDraft'])) {
     if (is_null($promptInfos['ParentID'])) {
         $tag = preg_replace('!\s+!', ' ', $_POST['Command_PromptTags']);
         $alltags = preg_split("/\,/", $tag);
+        $alltags= array_intersect_key(
+            $alltags,
+            array_unique( array_map( "strtolower", array_map('trim', $alltags)))
+        );
         $tag = "";
         // We remove 'nsfw' since it is managed by it's own column in the database.
         foreach ($alltags as $st) {
