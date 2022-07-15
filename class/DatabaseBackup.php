@@ -108,7 +108,7 @@ class DatabaseBackup
         header('Cache-Control: must-revalidate');
         header('Pragma: public');
         ob_clean();
-        echo utf8_encode($fileString);
+        echo chr(239) . chr(187) . chr(191) . $fileString;
         flush();
     }
 }
