@@ -10,7 +10,7 @@ class DatabaseBackup
     function __construct()
     {
         $this->conn = mysqli_connect(DBHOST, DBUSER, DBPWD, DBNAME);
-        $this->conn->set_charset("utf8");
+        $this->conn->set_charset("utf8mb4");
     }
 
     public static function getConnection()
@@ -101,14 +101,14 @@ class DatabaseBackup
 
         // Download the SQL backup file to the browser
         header('Content-Description: File Transfer');
-        header('Content-Type: application/octet-stream');
+        header('Content-Type: application/octet-stream; charset=utf-8');
         header('Content-Disposition: attachment; filename=' . $backup_file_name);
         header('Content-Transfer-Encoding: binary');
         header('Expires: 0');
         header('Cache-Control: must-revalidate');
         header('Pragma: public');
         ob_clean();
-        echo $fileString;
+        echo utf8_encode($fileString);
         flush();
     }
 }
