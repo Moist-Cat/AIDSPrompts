@@ -10,7 +10,7 @@ class DatabaseBackup
     function __construct()
     {
         $this->conn = mysqli_connect(DBHOST, DBUSER, DBPWD, DBNAME);
-        $this->conn->set_charset("utf8");
+        $this->conn->set_charset("utf8mb4");
     }
 
     public static function getConnection()
