@@ -63,7 +63,7 @@ $db = new db();
 $queryList = 'SELECT Distinct *, 1 FROM prompts where ParentID is Null and PublishDate is not null ';
 if (!empty($searchCode)) {
     $_SESSION['SearchCode'] = $searchCode;
-    $queryList = 'SELECT Distinct *  FROM prompts , editcode where ParentID is Null and PromptID = prompts.Id and SearchCode = ?';
+    $queryList = 'SELECT Distinct *  FROM prompts , editcode where ParentID is Null and PromptID = prompts.Id and BINARY SearchCode = ?';
     $sqlparams[] = $searchCode;
 } else {
 

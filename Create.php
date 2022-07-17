@@ -56,6 +56,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if (!isset($_POST["Command_Parent"])) {
         $alltags = preg_split("/\,/", $tag);
+        $alltags= array_intersect_key(
+            $alltags,
+            array_unique( array_map( "strtolower", array_map('trim', $alltags)))
+        );
         $tag = "";
         // We remove 'nsfw' since it is managed by it's own column in the database.
         foreach ($alltags as $st) {
