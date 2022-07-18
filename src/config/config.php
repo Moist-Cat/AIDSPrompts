@@ -1,6 +1,6 @@
 <?php define('DBUSER','root');
    define('DBPWD','');
-   define('DBHOST','localhost');
+   define('DBHOST','db');
    define('DBNAME','aiprompts'); 
    define('SITENAME','AI Prompts'); 
 ?>
