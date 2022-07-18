@@ -1,8 +1,11 @@
 RewriteEngine On
-RewriteBase /
+RewriteCond %{REQUEST_URI}::$1 ^(.*?/)(.*)::\2$
+RewriteRule ^(.*)$ - [E=BASE:%1]
+
 RewriteRule ^([0-9]+)$ Prompt.php?ID=$1
-RewriteRule ^prompts/(.*)$ /$1 [L,NC,R=302]
+RewriteRule ^prompts/(.*)$ %{ENV:BASE}$1 [L,NC,R=302]
 RewriteRule ^api/([0-9]+)$ /Kobold.php?ID=$1
 RewriteRule ^create Create.php
 RewriteRule ^news News.php
 RewriteRule ^whats-new News.php
+RewriteRule ^Index.php index.php
