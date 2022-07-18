@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  db:
+    container_name: club_db
+    image: mysql
+    volumes:
+      - "./data/db:/var/lib/mysql"
+    environment:
+      - MYSQL_DATABASE=mysql
+      - MYSQL_ALLOW_EMPTY_PASSWORD=1
+    ports:
+      - 8989:8989
+  web:
+    container_name: club_web
+    build: ./src
+    working_dir: /src/
+    command: php -S 0.0.0.0:8000
+    ports:
+      - 8000:8000
