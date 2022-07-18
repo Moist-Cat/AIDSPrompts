@@ -1,145 +1,91 @@
--- phpMyAdmin SQL Dump
--- version 5.2.0
--- https://www.phpmyadmin.net/
---
--- Hôte : 127.0.0.1
--- Généré le : sam. 09 juil. 2022 à 19:37
--- Version du serveur : 10.4.24-MariaDB
--- Version de PHP : 8.1.6
-
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-START TRANSACTION;
-SET time_zone = "+00:00";
-
+-- --------------------------------------------------------
+-- Host:                         127.0.0.1
+-- Server version:               5.7.33 - MySQL Community Server (GPL)
+-- Server OS:                    Win64
+-- HeidiSQL Version:             11.2.0.6213
+-- --------------------------------------------------------
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
+/*!40101 SET NAMES utf8 */;
+/*!50503 SET NAMES utf8mb4 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
---
--- Base de données : `aiprompts`
---
 
--- --------------------------------------------------------
+-- Dumping database structure for aiprompts
+CREATE DATABASE IF NOT EXISTS `aiprompts` /*!40100 DEFAULT CHARACTER SET latin1 */;
+USE `aiprompts`;
 
---
--- Structure de la table `editcode`
---
-
-CREATE TABLE `editcode` (
-  `ID` int(11) NOT NULL,
+-- Dumping structure for table aiprompts.editcode
+CREATE TABLE IF NOT EXISTS `editcode` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
   `PromptID` int(11) NOT NULL,
   `CodeEdit` longtext NOT NULL,
-  `SearchCode` longtext NOT NULL
+  `SearchCode` longtext NOT NULL,
+  PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- --------------------------------------------------------
+-- Dumping data for table aiprompts.editcode: ~0 rows (approximately)
+/*!40000 ALTER TABLE `editcode` DISABLE KEYS */;
+/*!40000 ALTER TABLE `editcode` ENABLE KEYS */;
 
---
--- Structure de la table `news`
---
-
-CREATE TABLE `news` (
+-- Dumping structure for table aiprompts.news
+CREATE TABLE IF NOT EXISTS `news` (
   `Date` date NOT NULL,
   `Title` text NOT NULL,
   `Content` longtext NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
---
--- Déchargement des données de la table `news`
---
+-- Dumping data for table aiprompts.news: ~1 rows (approximately)
+/*!40000 ALTER TABLE `news` DISABLE KEYS */;
+INSERT IGNORE INTO `news` (`Date`, `Title`, `Content`) VALUES
+	('2022-07-02', 'Release 1.0', 'Initial Release\r\n                                                       	Edit and Search Code System');
+/*!40000 ALTER TABLE `news` ENABLE KEYS */;
 
-INSERT INTO `news` (`Date`, `Title`, `Content`) VALUES
-('2022-07-02', 'Release 1.0', 'Initial Release\r\n                                                       	Edit and Search Code System');
-
--- --------------------------------------------------------
-
---
--- Structure de la table `prompts`
---
-
-CREATE TABLE `prompts` (
-  `Id` int(11) NOT NULL,
-  `AuthorsNote` longtext DEFAULT NULL,
-  `Description` longtext DEFAULT NULL,
-  `Memory` longtext DEFAULT NULL,
+-- Dumping structure for table aiprompts.prompts
+CREATE TABLE IF NOT EXISTS `prompts` (
+  `Id` int(11) NOT NULL AUTO_INCREMENT,
+  `AuthorsNote` longtext,
+  `Description` longtext,
+  `Memory` longtext,
   `Nsfw` int(11) NOT NULL,
   `ParentID` int(11) DEFAULT NULL,
-  `PromptContent` longtext DEFAULT NULL,
-  `PublishDate` text DEFAULT NULL,
+  `PromptContent` longtext,
+  `PublishDate` text,
   `Tags` text NOT NULL,
   `Title` text NOT NULL,
-  `ScriptZip` blob DEFAULT NULL,
-  `NovelAIScenario` longtext DEFAULT NULL,
-  `HoloAIScenario` longtext DEFAULT NULL,
+  `ScriptZip` blob,
+  `NovelAIScenario` longtext,
+  `HoloAIScenario` longtext,
   `CorrelationID` int(11) NOT NULL,
   `DateCreated` text NOT NULL,
-  `DateEdited` text DEFAULT NULL,
-  `Quests` text DEFAULT NULL
+  `DateEdited` text,
+  `Quests` text,
+  PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- --------------------------------------------------------
+-- Dumping data for table aiprompts.prompts: ~0 rows (approximately)
+/*!40000 ALTER TABLE `prompts` DISABLE KEYS */;
+/*!40000 ALTER TABLE `prompts` ENABLE KEYS */;
 
---
--- Structure de la table `worldinfos`
---
-
-CREATE TABLE `worldinfos` (
-  `Id` int(11) NOT NULL,
+-- Dumping structure for table aiprompts.worldinfos
+CREATE TABLE IF NOT EXISTS `worldinfos` (
+  `Id` int(11) NOT NULL AUTO_INCREMENT,
   `Entry` longtext NOT NULL,
   `WKeys` longtext NOT NULL,
   `PromptId` int(11) NOT NULL,
   `CorrelationId` int(11) NOT NULL,
   `DateCreated` longtext NOT NULL,
-  `DateEdited` longtext DEFAULT NULL
+  `DateEdited` longtext,
+  PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
---
--- Index pour les tables déchargées
---
+-- Dumping data for table aiprompts.worldinfos: ~0 rows (approximately)
+/*!40000 ALTER TABLE `worldinfos` DISABLE KEYS */;
+/*!40000 ALTER TABLE `worldinfos` ENABLE KEYS */;
 
---
--- Index pour la table `editcode`
---
-ALTER TABLE `editcode`
-  ADD PRIMARY KEY (`ID`);
-
---
--- Index pour la table `prompts`
---
-ALTER TABLE `prompts`
-  ADD PRIMARY KEY (`Id`);
-
---
--- Index pour la table `worldinfos`
---
-ALTER TABLE `worldinfos`
-  ADD PRIMARY KEY (`Id`);
-
---
--- AUTO_INCREMENT pour les tables déchargées
---
-
---
--- AUTO_INCREMENT pour la table `editcode`
---
-ALTER TABLE `editcode`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=237;
-
---
--- AUTO_INCREMENT pour la table `prompts`
---
-ALTER TABLE `prompts`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3338;
-
---
--- AUTO_INCREMENT pour la table `worldinfos`
---
-ALTER TABLE `worldinfos`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12315;
-COMMIT;
-
+/*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
+/*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=IFNULL(@OLD_SQL_NOTES, 1) */;

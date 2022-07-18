@@ -6,15 +6,13 @@ services:
     image: mysql
     volumes:
       - "./data/db:/var/lib/mysql"
+      - ./src/db/aiprompts.sql:/docker-entrypoint-initdb.d/aiprompts.sql
     environment:
       - MYSQL_DATABASE=mysql
       - MYSQL_ALLOW_EMPTY_PASSWORD=1
-    ports:
-      - 8989:8989
   web:
     container_name: club_web
     build: ./src
     working_dir: /src/
-    command: php -S 0.0.0.0:8000
     ports:
-      - 8000:8000
+      - 8000:80
