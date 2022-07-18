@@ -202,7 +202,7 @@ VALUES(?, ?, ?, ?, ?);";
     <title>Bootstrap Form Validation</title>
     <link rel="stylesheet" href="css/bootstrap.dark.css">
     <link rel="stylesheet" href="css/spage.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js">
+    <script src="js/jquery-3.6.0.min.js">
     </script>
     <script src="js/form.js">
     </script>

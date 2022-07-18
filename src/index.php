@@ -72,7 +72,7 @@ if (!empty($searchCode)) {
 
 // If filter for the Title is actived we add the condition
 if (!empty($by_title)) {
-    $queryList .= "and Title like ?";
+    $queryList .= "&& Title like ?";
     $sqlparams[] = "%$by_title%";
 }
 

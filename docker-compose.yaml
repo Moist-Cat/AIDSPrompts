@@ -14,5 +14,7 @@ services:
     container_name: club_web
     build: ./src
     working_dir: /src/
+    volumes:
+      - ./src:/var/www/html/
     ports:
       - 8000:80
